@@ -12,7 +12,7 @@ class CreateProductDiscountsTable extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['percent', 'amount']);
-            $table->integer('discount');
+            $table->integer('amount');
             $table->timestamps();
         });
     }

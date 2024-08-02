@@ -11,38 +11,34 @@ class ProductSeeder extends Seeder
 {
     public function run()
     {
-        // Array of free clothing image URLs
+        $product = Product::create([
+            'name' => 'Fall Limited Edition Sneakers',
+            'description' => "These low-profile sneakers are your perfect casual wear companion. Featuring a durable rubber outer sole, they'll withstand everything the weather can offer.",
+            'price' => 250.00,
+            'slug' => 'fall-limited-edition-sneakers',
+            'active' => true,
+        ]);
+
+        // Add images
         $imageUrls = [
-            'https://pixabay.com/photos/clothesline-little-girl-dresses-804812/',
-            'https://pixabay.com/photos/white-clothing-people-girl-2565592/',
-            'https://pixabay.com/illustrations/ai-generated-man-beach-apparel-8786355/',
-            'https://pixabay.com/photos/girl-blonde-winter-clothes-face-1039729/',
-            'https://pixabay.com/photos/sweatshirts-sweaters-exhibition-428607/',
-            'https://pixabay.com/photos/shirts-exhibition-store-shopping-428627/',
-            'https://pixabay.com/photos/shirts-exhibition-store-shopping-428618/',
-            'https://pixabay.com/photos/clothes-sneakers-shoes-fedora-hat-922988/',
-            'https://pixabay.com/photos/fashion-suit-tailor-clothes-1979136/',
-            'https://pixabay.com/photos/wardrobe-coat-hanger-dressing-room-5961193/',
+            '/images/image-product-1.jpg',
+            '/images/image-product-2.jpg',
+            '/images/image-product-3.jpg',
+            '/images/image-product-4.jpg',
         ];
 
-        Product::factory()->count(5)->create()->each(function ($product, $index) use ($imageUrls) {
-            // Add images
-            $productImages = array_slice($imageUrls, 0, 2);
-            foreach ($productImages as $url) {
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'path' => $url,
-                ]);
-            }
+        foreach ($imageUrls as $url) {
+            ProductImage::create([
+                'product_id' => $product->id,
+                'path' => $url,
+            ]);
+        }
 
-            // Apply 30% discount to even-indexed products
-            if ($index % 2 == 0) {
-                ProductDiscount::create([
-                    'product_id' => $product->id,
-                    'type' => 'percent',
-                    'discount' => 30,
-                ]);
-            }
-        });
+        // Add discount
+        ProductDiscount::create([
+            'product_id' => $product->id,
+            'type' => 'percent',
+            'amount' => 50,
+        ]);
     }
 }

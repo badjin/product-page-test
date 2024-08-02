@@ -45,10 +45,35 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($slug)
     {
-        $product = Product::with(['images', 'discount'])->findOrFail($id);
-        return response()->json($this->formatProductResponse($product));
+        $product = Product::where('slug', $slug)->with(['images', 'discount'])->firstOrFail();
+
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        $discountedPrice = $product->price;
+        if ($product->discount) {
+            $discountedPrice = $product->discount->type === 'percent'
+                ? $product->price * (1 - $product->discount->amount / 100)
+                : $product->price - $product->discount->amount;
+        }
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price' => [
+                'full' => $product->price,
+                'discounted' => $product->getDiscountedPrice(),
+            ],
+            'discount' => [
+                'amount' => $product->discount ? $product->discount->amount : 0,
+                'type' => $product->discount ? $product->discount->type : null,
+            ],
+            'images' => $product->images->pluck('path'),
+        ]);
     }
 
     /**
@@ -98,7 +123,7 @@ class ProductController extends Controller
             'slug' => $product->slug,
             'price' => [
                 'full' => $product->price,
-                'discounted' => $product->discount ? $this->calculateDiscountedPrice($product) : $product->price,
+                'discounted' => $product->getDiscountedPrice(),
             ],
             'discount' => $product->discount ? [
                 'type' => $product->discount->type,
@@ -107,19 +132,4 @@ class ProductController extends Controller
             'images' => $product->images->pluck('path'),
         ];
     }
-
-    private function calculateDiscountedPrice($product)
-    {
-        if ($product->discount->type === 'percent') {
-            return $product->price * (100 - $product->discount->discount) / 100;
-        } else {
-            return $product->price - $product->discount->discount;
-        }
-    }
-
-    public function showBySlug($slug)
-{
-    $product = Product::with(['images', 'discount'])->where('slug', $slug)->firstOrFail();
-    return response()->json($this->formatProductResponse($product));
-}
 }

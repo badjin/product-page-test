@@ -14,7 +14,7 @@ class CreateProductsTable extends Migration
             $table->text('description');
             $table->string('slug')->unique();
             $table->integer('price');
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }
